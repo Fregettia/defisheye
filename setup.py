@@ -26,7 +26,8 @@ setup(
                       "argcomplete",
                       'tqdm',
                       'pygubu',
-                      'Pillow'
+                      'Pillow',
+                      'importlib-resources>=5; python_version < "3.9"'
                       ],
     entry_points={"console_scripts": [
         "defisheye = defisheye.__main__:main",

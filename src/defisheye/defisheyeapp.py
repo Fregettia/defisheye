@@ -23,7 +23,13 @@ Copyright [2019] [E. S. Pereira]
    See the License for the specific language governing permissions and
    limitations under the License.
 """
-import pkg_resources
+try:
+    # Prefer stdlib importlib.resources when available and complete.
+    from importlib import resources
+    if not hasattr(resources, "files"):  # Python < 3.9
+        raise ImportError
+except ImportError:  # pragma: no cover - fallback for older Python versions
+    import importlib_resources as resources
 import tkinter as tk
 import tkinter.ttk as ttk
 import pygubu
@@ -39,11 +45,10 @@ class DefisheyeApp:
         self.root = tk.Tk()
 
         self.builder = pygubu.Builder()
-        self._ui = pkg_resources.resource_filename(
-            "defisheye", f"gui/main.ui")
+        gui_resources = resources.files(__package__).joinpath("gui")
+        self._ui = str(gui_resources / "main.ui")
 
-        self.icon = pkg_resources.resource_filename(
-            "defisheye", f"gui/camera.png")
+        self.icon = str(gui_resources / "camera.png")
 
         self.builder.add_from_file(self._ui)
         self.mainwindow = self.builder.get_object("frame1", self.root)
@@ -52,16 +57,14 @@ class DefisheyeApp:
         self.root.iconphoto(False, tk.PhotoImage(file=self.icon))
 
         # Open Image Button
-        self._openimageicon = pkg_resources.resource_filename(
-            "defisheye", f"gui/open-image.png")
+        self._openimageicon = str(gui_resources / "open-image.png")
         self._openimagephoto = tk.PhotoImage(file=self._openimageicon)
         self._open_image_btn = self.builder.get_object("openimage")
         self._open_image_btn['image'] = self._openimagephoto
         self._open_image_btn.configure(command=self.open_image)
 
         # Edit Image Button
-        self._editimageicon = pkg_resources.resource_filename(
-            "defisheye", f"gui/edit-image.png")
+        self._editimageicon = str(gui_resources / "edit-image.png")
         self._editimagephoto = tk.PhotoImage(file=self._editimageicon)
         self._edit_image_btn = self.builder.get_object("editimage")
         self._edit_image_btn['image'] = self._editimagephoto
@@ -69,8 +72,7 @@ class DefisheyeApp:
         self._edit_image_btn.configure(command=self.process_image)
 
         # Image Icon
-        self._imageicon = pkg_resources.resource_filename(
-            "defisheye", f"gui/image200x200.png")
+        self._imageicon = str(gui_resources / "image200x200.png")
         self._imagephoto = tk.PhotoImage(file=self._imageicon)
 
         # Original Image
