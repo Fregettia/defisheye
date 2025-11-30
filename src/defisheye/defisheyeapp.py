@@ -54,18 +54,18 @@ class DefisheyeApp:
         self.mainwindow = self.builder.get_object("frame1", self.root)
 
         self.root.title("Defisheye")
-        self.root.iconphoto(False, tk.PhotoImage(file=self.icon))
+        self.root.iconphoto(False, tk.PhotoImage(file=self.icon, master=self.root))
 
         # Open Image Button
         self._openimageicon = str(gui_resources / "open-image.png")
-        self._openimagephoto = tk.PhotoImage(file=self._openimageicon)
+        self._openimagephoto = tk.PhotoImage(file=self._openimageicon, master=self.root)
         self._open_image_btn = self.builder.get_object("openimage")
         self._open_image_btn['image'] = self._openimagephoto
         self._open_image_btn.configure(command=self.open_image)
 
         # Edit Image Button
         self._editimageicon = str(gui_resources / "edit-image.png")
-        self._editimagephoto = tk.PhotoImage(file=self._editimageicon)
+        self._editimagephoto = tk.PhotoImage(file=self._editimageicon, master=self.root)
         self._edit_image_btn = self.builder.get_object("editimage")
         self._edit_image_btn['image'] = self._editimagephoto
 
@@ -73,7 +73,7 @@ class DefisheyeApp:
 
         # Image Icon
         self._imageicon = str(gui_resources / "image200x200.png")
-        self._imagephoto = tk.PhotoImage(file=self._imageicon)
+        self._imagephoto = tk.PhotoImage(file=self._imageicon, master=self.root)
 
         # Original Image
         self._original_image_label = self.builder.get_object("originalimage")
@@ -158,7 +158,7 @@ class DefisheyeApp:
         height_new = int(400)
         img_resized = img.resize((width_new, height_new))
 
-        self._original_image = ImageTk.PhotoImage(img_resized)
+        self._original_image = ImageTk.PhotoImage(img_resized, master=self.root)
         self._original_image_label['image'] = self._original_image
 
     def process_image(self):
@@ -185,7 +185,7 @@ class DefisheyeApp:
             height_new = int(400)
             img_resized = img.resize((width_new, height_new))
 
-            self._processed_image = ImageTk.PhotoImage(img_resized)
+            self._processed_image = ImageTk.PhotoImage(img_resized, master=self.root)
 
             self._edited_image_label['image'] = self._processed_image
 
