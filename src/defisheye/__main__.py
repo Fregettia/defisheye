@@ -125,8 +125,8 @@ def main():
 
         if cfg.save_dir is None:
             normpath = os.path.normpath(cfg.image)
-            basedirs = os.path.split(normpath)[0]
-            outdir = os.path.join(basedirs[0], "Defisheye")
+            base_dir = os.path.dirname(normpath)
+            outdir = os.path.join(base_dir, "Defisheye")
         else:
             outdir = cfg.save_dir
 
