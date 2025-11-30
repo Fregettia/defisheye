@@ -77,7 +77,7 @@ class DefisheyeApp:
 
         # Batch Button
         self._batch_btn = self.builder.get_object("batchprocess")
-        self._batch_btn.configure(command=self.process_folder)
+        self._batch_btn.configure(command=self._open_batch_dialog)
 
         # Image Icon
         self._imageicon = str(gui_resources / "image200x200.png")
@@ -216,6 +216,9 @@ class DefisheyeApp:
         output_dir = askdirectory(title="Select output folder", parent=self.root)
         if not output_dir:
             return
+        self._run_batch(input_dir, output_dir)
+
+    def _run_batch(self, input_dir, output_dir):
         os.makedirs(output_dir, exist_ok=True)
 
         exts = {"png", "jpg", "jpeg"}
@@ -237,6 +240,62 @@ class DefisheyeApp:
             obj.convert(outfile=out_path)
 
         messagebox.showinfo("Defisheye", f"Processed {len(files)} images into {output_dir}.")
+
+    def _open_batch_dialog(self):
+        if hasattr(self, "_batch_window") and self._batch_window.winfo_exists():
+            self._batch_window.lift()
+            return
+
+        self._batch_window = tk.Toplevel(self.root)
+        self._batch_window.title("Batch Process")
+        self._batch_window.transient(self.root)
+        self._batch_window.resizable(False, False)
+
+        in_var = tk.StringVar()
+        out_var = tk.StringVar()
+        self._batch_window.columnconfigure(1, weight=1)
+
+        tk.Label(self._batch_window, text="Input folder:").grid(
+            row=0, column=0, padx=5, pady=5, sticky="w")
+        in_entry = ttk.Entry(self._batch_window, textvariable=in_var, width=40)
+        in_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+        ttk.Button(self._batch_window, text="Browse",
+                   command=lambda: self._choose_dir(in_var)).grid(
+            row=0, column=2, padx=5, pady=5)
+
+        tk.Label(self._batch_window, text="Output folder:").grid(
+            row=1, column=0, padx=5, pady=5, sticky="w")
+        out_entry = ttk.Entry(self._batch_window, textvariable=out_var, width=40)
+        out_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
+        ttk.Button(self._batch_window, text="Browse",
+                   command=lambda: self._choose_dir(out_var)).grid(
+            row=1, column=2, padx=5, pady=5)
+
+        btn_frame = ttk.Frame(self._batch_window)
+        btn_frame.grid(row=2, column=0, columnspan=3, pady=10)
+        ttk.Button(btn_frame, text="Cancel",
+                   command=self._batch_window.destroy).pack(side="left", padx=5)
+        ttk.Button(btn_frame, text="Run",
+                   command=lambda: self._confirm_batch(in_var.get(), out_var.get())).pack(
+            side="left", padx=5)
+
+    def _choose_dir(self, var):
+        path = askdirectory(parent=self.root)
+        if path:
+            var.set(path)
+
+    def _confirm_batch(self, input_dir, output_dir):
+        if not input_dir or not output_dir:
+            messagebox.showerror("Defisheye", "Please select both input and output folders.")
+            return
+        if not os.path.isdir(input_dir):
+            messagebox.showerror("Defisheye", "Input folder does not exist.")
+            return
+        try:
+            self._run_batch(input_dir, output_dir)
+        finally:
+            if hasattr(self, "_batch_window") and self._batch_window.winfo_exists():
+                self._batch_window.destroy()
 
     def run(self):
         self.mainwindow.mainloop()
