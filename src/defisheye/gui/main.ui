@@ -50,6 +50,20 @@
                 </layout>
               </object>
             </child>
+            <child>
+              <object class="ttk.Button" id="batchprocess" named="True">
+                <property name="text" translatable="yes">Batch</property>
+                <property name="width">10</property>
+                <layout manager="pack">
+                  <property name="fill">y</property>
+                  <property name="ipadx">1</property>
+                  <property name="ipady">1</property>
+                  <property name="padx">1</property>
+                  <property name="pady">1</property>
+                  <property name="side">left</property>
+                </layout>
+              </object>
+            </child>
           </object>
         </child>
         <child>

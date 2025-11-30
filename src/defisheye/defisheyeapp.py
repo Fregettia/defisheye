@@ -30,10 +30,12 @@ try:
         raise ImportError
 except ImportError:  # pragma: no cover - fallback for older Python versions
     import importlib_resources as resources
+import os
 import tkinter as tk
 import tkinter.ttk as ttk
 import pygubu
-from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askopenfilename, askdirectory
+from tkinter import messagebox
 import cv2
 from PIL import Image
 
@@ -72,6 +74,10 @@ class DefisheyeApp:
         self._edit_image_btn['image'] = self._editimagephoto
 
         self._edit_image_btn.configure(command=self.process_image)
+
+        # Batch Button
+        self._batch_btn = self.builder.get_object("batchprocess")
+        self._batch_btn.configure(command=self.process_folder)
 
         # Image Icon
         self._imageicon = str(gui_resources / "image200x200.png")
@@ -129,6 +135,19 @@ class DefisheyeApp:
         self._xpand.set(0)
         self._xpand_entry['textvariable'] = self._xpand
 
+    def _current_kwargs(self):
+        return {
+            "fov": self._fov.get(),
+            "pfov": self._pfov.get(),
+            "xcenter": self._xcenter.get() if self._xcenter.get() != -1 else None,
+            "ycenter": self._ycenter.get() if self._ycenter.get() != -1 else None,
+            "radius": self._radius.get() if self._radius.get() != -1 else None,
+            "pad": self._xpand.get() if self._xpand.get() > 0 else 0,
+            "angle": self._angle.get() if self._angle.get() != -1 else None,
+            "dtype": self._dtype.get(),
+            "format": self._format.get()
+        }
+
     def _photo_image_from_pil(self, image: Image.Image) -> tk.PhotoImage:
         """Convert a PIL image to a Tk PhotoImage without ImageTk dependency."""
         buffer = io.BytesIO()
@@ -172,16 +191,7 @@ class DefisheyeApp:
 
     def process_image(self):
 
-        vkwargs = {"fov": self._fov.get(),
-                   "pfov": self._pfov.get(),
-                   "xcenter": self._xcenter.get() if self._xcenter.get() != -1 else None,
-                   "ycenter": self._ycenter.get() if self._ycenter.get() != -1 else None,
-                   "radius": self._radius.get() if self._radius.get() != -1 else None,
-                   "pad": self._xpand.get() if self._xpand.get() > 0 else 0,
-                   "angle": self._angle.get() if self._angle.get() != -1 else None,
-                   "dtype": self._dtype.get(),
-                   "format": self._format.get()
-                   }
+        vkwargs = self._current_kwargs()
 
         if self._original_imag_file is not None:
             defisheye = Defisheye(self._original_imag_file, **vkwargs)
@@ -197,6 +207,36 @@ class DefisheyeApp:
             self._processed_image = self._photo_image_from_pil(img_resized)
 
             self._edited_image_label['image'] = self._processed_image
+
+    def process_folder(self):
+        input_dir = askdirectory(title="Select input images folder", parent=self.root)
+        if not input_dir:
+            return
+
+        output_dir = askdirectory(title="Select output folder", parent=self.root)
+        if not output_dir:
+            return
+        os.makedirs(output_dir, exist_ok=True)
+
+        exts = {"png", "jpg", "jpeg"}
+        files = [
+            fname for fname in os.listdir(input_dir)
+            if os.path.isfile(os.path.join(input_dir, fname))
+            and fname.lower().split(".")[-1] in exts
+        ]
+
+        if not files:
+            messagebox.showinfo("Defisheye", "No images found in the selected folder.")
+            return
+
+        vkwargs = self._current_kwargs()
+        for fname in files:
+            in_path = os.path.join(input_dir, fname)
+            out_path = os.path.join(output_dir, fname)
+            obj = Defisheye(in_path, **vkwargs)
+            obj.convert(outfile=out_path)
+
+        messagebox.showinfo("Defisheye", f"Processed {len(files)} images into {output_dir}.")
 
     def run(self):
         self.mainwindow.mainloop()
