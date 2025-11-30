@@ -35,9 +35,11 @@ import tkinter.ttk as ttk
 import pygubu
 from tkinter.filedialog import askopenfilename
 import cv2
-from PIL import Image, ImageTk
+from PIL import Image
 
 from .defisheye import Defisheye
+import io
+import base64
 
 
 class DefisheyeApp:
@@ -127,6 +129,13 @@ class DefisheyeApp:
         self._xpand.set(0)
         self._xpand_entry['textvariable'] = self._xpand
 
+    def _photo_image_from_pil(self, image: Image.Image) -> tk.PhotoImage:
+        """Convert a PIL image to a Tk PhotoImage without ImageTk dependency."""
+        buffer = io.BytesIO()
+        image.save(buffer, format="PNG")
+        encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
+        return tk.PhotoImage(data=encoded, master=self.root)
+
     def _vars(self):
         self._fov = tk.IntVar()
         self._pfov = tk.IntVar()
@@ -158,7 +167,7 @@ class DefisheyeApp:
         height_new = int(400)
         img_resized = img.resize((width_new, height_new))
 
-        self._original_image = ImageTk.PhotoImage(img_resized, master=self.root)
+        self._original_image = self._photo_image_from_pil(img_resized)
         self._original_image_label['image'] = self._original_image
 
     def process_image(self):
@@ -185,7 +194,7 @@ class DefisheyeApp:
             height_new = int(400)
             img_resized = img.resize((width_new, height_new))
 
-            self._processed_image = ImageTk.PhotoImage(img_resized, master=self.root)
+            self._processed_image = self._photo_image_from_pil(img_resized)
 
             self._edited_image_label['image'] = self._processed_image
 
